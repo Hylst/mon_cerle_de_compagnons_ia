@@ -146,4 +146,18 @@ Pour contribuer au projet, consultez le fichier `README.md` et `todo.md` pour le
 
 ---
 
+## [Non publié]
+
+### Terminé
+- Correction du pattern regex dans vercel.json pour le déploiement Vercel
+  - Échappement correct des backslashes dans le pattern de fichiers statiques
+  - Résolution de l'erreur "Header at index 2 has invalid source pattern"
+
+### À faire
+- Tests d'intégration complets
+- Optimisation des performances audio
+- Documentation technique détaillée
+
+---
+
 *Dernière mise à jour : Janvier 2025*
