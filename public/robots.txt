@@ -1,0 +1,28 @@
+# robots.txt for Mon cercle de compagnons IA
+# https://mon-cercle-de-compagnons-ia.vercel.app/robots.txt
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://mon-cercle-de-compagnons-ia.vercel.app/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Disallow crawling of service worker and manifest files
+Disallow: /sw.js
+Disallow: /manifest.json
+
+# Allow crawling of important assets
+Allow: /icon-*.svg
+Allow: /icon-*.png
+Allow: /*.css
+Allow: /*.js
+Allow: /*.tsx
+
+# Block crawling of development files
+Disallow: /*.map
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /.env*
