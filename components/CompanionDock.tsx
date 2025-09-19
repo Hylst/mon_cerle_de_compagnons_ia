@@ -7,7 +7,7 @@ import cn from 'classnames';
 import { useLiveAPIContext } from '../contexts/LiveAPIContext';
 import { useAgent, useUI, useInputAudio, useAppConfig } from '../lib/state';
 import { Agent, createNewAgent } from '../lib/presets/agents';
-import { AudioRecorder } from '../lib/audio-recorder';
+import { AudioRecorderBase64 as AudioRecorder } from '../lib/audio-recorder-base64';
 
 export default function CompanionDock() {
   const {

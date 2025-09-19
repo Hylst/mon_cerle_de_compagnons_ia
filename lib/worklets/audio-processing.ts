@@ -22,7 +22,7 @@ class AudioProcessingWorklet extends AudioWorkletProcessor {
    * @param inputs Float32Array[][] [input#][channel#][sample#] so to access first inputs 1st channel inputs[0][0]
    * @param outputs Float32Array[][][]
    */
-  process(inputs: Float32Array[][]) {
+  process(inputs) {
     if (inputs[0].length) {
       const channel0 = inputs[0][0];
       this.processChunk(channel0);
@@ -40,7 +40,7 @@ class AudioProcessingWorklet extends AudioWorkletProcessor {
     this.bufferWriteIndex = 0;
   }
 
-  processChunk(float32Array: Float32Array) {
+  processChunk(float32Array) {
     const l = float32Array.length;
     
     for (let i = 0; i < l; i++) {

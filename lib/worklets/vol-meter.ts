@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 class VolMeter extends AudioWorkletProcessor {
-    volume: number;
-    updateIntervalInMS: number;
-    nextUpdateFrame: number;
+    volume;
+    updateIntervalInMS;
+    nextUpdateFrame;
 
     constructor() {
       super()
@@ -25,7 +25,7 @@ class VolMeter extends AudioWorkletProcessor {
       return (this.updateIntervalInMS / 1000) * sampleRate
     }
 
-    process(inputs: Float32Array[][]) {
+    process(inputs) {
       const input = inputs[0]
 
       if (input.length > 0) {
