@@ -34,7 +34,7 @@ export const useAppConfig = create<{
   incrementUsage: () => void;
   loadFromLocalStorage: () => void;
 }>(set => ({
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY || null,
+  apiKey: null,
   usageMode: null,
   usageCount: 0,
   setApiKey: (key: string) => {
