@@ -19,10 +19,9 @@
  */
 
 import { audioContext } from './utils';
-import AudioRecordingWorklet from './worklets/audio-processing';
-import VolMeterWorket from './worklets/vol-meter';
+import AudioRecordingWorkletUrl from './worklets/audio-processing.ts?url';
+import VolMeterWorkletUrl from './worklets/vol-meter.ts?url';
 
-import { createWorketFromSrc } from './audioworklet-registry';
 import { EventEmitter } from 'eventemitter3';
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
@@ -64,13 +63,11 @@ export class AudioRecorder extends EventEmitter<AudioRecorderEvents> {
       this.audioContext = await audioContext({ sampleRate: this.sampleRate });
       this.source = this.audioContext.createMediaStreamSource(this.stream);
 
-      const workletName = 'audio-recorder-worklet';
-      const src = createWorketFromSrc(workletName, AudioRecordingWorklet);
-
-      await this.audioContext.audioWorklet.addModule(src);
+      const recordingWorkletName = 'audio-processing-worklet';
+      await this.audioContext.audioWorklet.addModule(AudioRecordingWorkletUrl);
       this.recordingWorklet = new AudioWorkletNode(
         this.audioContext,
-        workletName
+        recordingWorkletName
       );
 
       this.recordingWorklet.port.onmessage = async (ev: MessageEvent) => {
@@ -85,10 +82,8 @@ export class AudioRecorder extends EventEmitter<AudioRecorderEvents> {
       this.source.connect(this.recordingWorklet);
 
       // vu meter worklet
-      const vuWorkletName = 'vu-meter';
-      await this.audioContext.audioWorklet.addModule(
-        createWorketFromSrc(vuWorkletName, VolMeterWorket)
-      );
+      const vuWorkletName = 'vol-meter';
+      await this.audioContext.audioWorklet.addModule(VolMeterWorkletUrl);
       this.vuWorklet = new AudioWorkletNode(this.audioContext, vuWorkletName);
       this.vuWorklet.port.onmessage = (ev: MessageEvent) => {
         this.emit('volume', ev.data.volume);

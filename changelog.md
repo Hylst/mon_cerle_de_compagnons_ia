@@ -146,7 +146,15 @@ Pour contribuer au projet, consultez le fichier `README.md` et `todo.md` pour le
 
 ---
 
-## [Non publié]
+## [Unreleased]
+
+### Fixed
+- **Audio Worklet Loading on Vercel**:
+  - Refactored `audio-processing.ts` and `vol-meter.ts` to be self-registering `AudioWorkletProcessor`s, removing the need for Blob URLs.
+  - Updated `vite.config.ts` to treat worklet files as assets with stable URLs using the `?url` import suffix.
+  - This resolves the issue where audio worklets failed to load in the Vercel production environment due to restrictive Content Security Policies.
+  - Removed the now-redundant `audioworklet-registry.ts` and `createWorketFromSrc` function.
+  - Updated `audio-streamer.ts`, `audio-recorder.ts`, and `use-live-api.ts` to use the new URL-based worklet loading mechanism.
 
 ### Terminé
 - Correction du pattern regex dans vercel.json pour le déploiement Vercel

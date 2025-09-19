@@ -12,6 +12,23 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: (id) => {
+              if (id.includes('node_modules')) {
+                return 'vendor';
+              }
+            },
+            assetFileNames: (assetInfo) => {
+              if (assetInfo.name && assetInfo.name.endsWith('.ts') && assetInfo.name.includes('lib/worklets')) {
+                return `assets/worklets/[name].[ext]`;
+              }
+              return `assets/[name].[hash].[ext]`;
+            },
+          }
+        }
       }
     };
 });

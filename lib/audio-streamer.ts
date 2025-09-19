@@ -19,7 +19,6 @@
  */
 
 import {
-  createWorketFromSrc,
   registeredWorklets,
 } from './audioworklet-registry';
 
@@ -50,7 +49,7 @@ export class AudioStreamer {
 
   async addWorklet<T extends (d: any) => void>(
     workletName: string,
-    workletSrc: string,
+    workletUrl: string,
     handler: T
   ): Promise<this> {
     let workletsRecord = registeredWorklets.get(this.context);
@@ -70,8 +69,7 @@ export class AudioStreamer {
     // create new record to fill in as becomes available
     workletsRecord[workletName] = { handlers: [handler] };
 
-    const src = createWorketFromSrc(workletName, workletSrc);
-    await this.context.audioWorklet.addModule(src);
+    await this.context.audioWorklet.addModule(workletUrl);
     const worklet = new AudioWorkletNode(this.context, workletName);
 
     //add the node into the map
