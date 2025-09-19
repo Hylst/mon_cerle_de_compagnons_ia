@@ -146,6 +146,39 @@ Pour contribuer au projet, consultez le fichier `README.md` et `todo.md` pour le
 
 ---
 
+## [2024-01-XX] - Worklet Fixes and Multiple Solution Implementations
+
+### Added
+- **New Audio Worklet Strategies**: Implemented 4 different solutions for worklet loading issues
+  - Solution 1: Fixed inline worklets with proper TypeScript syntax
+  - Solution 2: Base64-embedded worklets (`audio-recorder-base64.ts`)
+  - Solution 3: Dynamic imports with fallback mechanisms (`audio-recorder-dynamic.ts`)
+  - Solution 4: ScriptProcessorNode fallback system (`audio-recorder-fallback.ts`)
+- **TypeScript Declarations**: Added `?raw` import type declarations in `vite-env.d.ts`
+
+### Changed
+- **TypeScript Syntax in Worklets**: Removed type annotations from `audio-processing.ts` to ensure JavaScript compatibility
+- **Audio Recorder Implementation**: Completely rewritten with Blob URL approach and proper event handling
+- **MIME Type Configuration**: Updated Blob URLs to use `application/javascript` instead of `text/javascript`
+
+### Fixed
+- **Critical Issues Resolved**:
+  - ❌ `AbortError: Unable to load a worklet's module` - Fixed with 4 different solutions
+  - ❌ `SyntaxError: Unexpected identifier 'hasAudio'` - Resolved TypeScript syntax incompatibility
+  - ❌ `Cannot find module './worklets/*.ts?raw'` - Added TypeScript declarations for raw imports
+- **4 Solutions Implemented**:
+  1. **Inline Worklets** (Recommended): Fixed syntax + proper Blob URLs
+  2. **Base64 Embedding**: Worklets embedded directly in bundle
+  3. **Dynamic Imports**: Multiple fallback strategies for loading
+  4. **ScriptProcessor Fallback**: Compatible with all browsers
+
+### Technical Details
+- Removed TypeScript property annotations (`hasAudio: boolean;` → `hasAudio = false;`)
+- Simplified Vite configuration to avoid complex Rollup bundling issues
+- Added proper event emission and cleanup mechanisms
+- Implemented comprehensive error handling for all worklet loading scenarios
+- Added `declare module '*?raw'` to resolve TypeScript module resolution errors
+
 ## [Unreleased]
 
 ### Added
