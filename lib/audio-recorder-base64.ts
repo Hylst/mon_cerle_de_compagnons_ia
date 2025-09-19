@@ -3,24 +3,113 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 /**
- * Copyright 2024 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Alternative Audio Recorder with Base64 Embedded Worklets
+ * This implementation embeds worklet code as base64 strings to avoid file loading issues
  */
 
-import audioProcessingWorkletRaw from './worklets/audio-processing.ts?raw';
-import volMeterWorkletRaw from './worklets/vol-meter.ts?raw';
 import { EventEmitter } from 'eventemitter3';
+
+// Base64 encoded worklet code - embedded directly in the bundle
+const AUDIO_PROCESSING_WORKLET_BASE64 = btoa(`
+/// <reference types="audioworklet" />
+
+class AudioProcessingWorklet extends AudioWorkletProcessor {
+  buffer = new Int16Array(2048);
+  bufferWriteIndex = 0;
+  hasAudio = false;
+
+  constructor() {
+    super();
+  }
+
+  process(inputs) {
+    if (inputs[0].length) {
+      const channel0 = inputs[0][0];
+      this.processChunk(channel0);
+    }
+    return true;
+  }
+
+  sendAndClearBuffer(){
+    this.port.postMessage({
+      event: "chunk",
+      data: {
+        int16arrayBuffer: this.buffer.slice(0, this.bufferWriteIndex).buffer,
+      },
+    });
+    this.bufferWriteIndex = 0;
+  }
+
+  processChunk(float32Array) {
+    const l = float32Array.length;
+    
+    for (let i = 0; i < l; i++) {
+      const int16Value = float32Array[i] * 32768;
+      this.buffer[this.bufferWriteIndex++] = int16Value;
+
+      if (this.bufferWriteIndex >= this.buffer.length) {
+        this.sendAndClearBuffer();
+      }
+    }
+
+    if(this.bufferWriteIndex >= this.buffer.length) {
+      this.sendAndClearBuffer();
+    }
+  }
+}
+
+registerProcessor('audio-processing-worklet', AudioProcessingWorklet);
+`);
+
+const VOL_METER_WORKLET_BASE64 = btoa(`
+/// <reference types="audioworklet" />
+
+class VolMeter extends AudioWorkletProcessor {
+    volume = 0;
+    updateIntervalInMS = 25;
+    nextUpdateFrame = 25;
+
+    constructor() {
+      super()
+      this.port.onmessage = event => {
+        if (event.data.updateIntervalInMS) {
+          this.updateIntervalInMS = event.data.updateIntervalInMS
+        }
+      }
+    }
+
+    get intervalInFrames() {
+      return (this.updateIntervalInMS / 1000) * sampleRate
+    }
+
+    process(inputs) {
+      const input = inputs[0]
+
+      if (input.length > 0) {
+        const samples = input[0]
+        let sum = 0
+        let rms = 0
+
+        for (let i = 0; i < samples.length; ++i) {
+          sum += samples[i] * samples[i]
+        }
+
+        rms = Math.sqrt(sum / samples.length)
+        this.volume = Math.max(rms, this.volume * 0.7)
+
+        this.nextUpdateFrame -= samples.length
+        if (this.nextUpdateFrame < 0) {
+          this.nextUpdateFrame += this.intervalInFrames
+          this.port.postMessage({volume: this.volume})
+        }
+      }
+
+      return true
+    }
+}
+
+registerProcessor('vol-meter', VolMeter);
+`);
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   var binary = '';
@@ -37,7 +126,7 @@ interface AudioRecorderEvents {
   volume: (volume: number) => void;
 }
 
-export class AudioRecorder extends EventEmitter<AudioRecorderEvents> {
+export class AudioRecorderBase64 extends EventEmitter<AudioRecorderEvents> {
   stream: MediaStream | undefined;
   audioContext: AudioContext | undefined;
   source: MediaStreamAudioSourceNode | undefined;
@@ -62,11 +151,14 @@ export class AudioRecorder extends EventEmitter<AudioRecorderEvents> {
         this.audioContext = new AudioContext({ sampleRate: this.sampleRate });
         this.source = this.audioContext.createMediaStreamSource(this.stream);
 
-        // Create Blob URLs for worklets with proper MIME type
-        const recordingWorkletBlob = new Blob([audioProcessingWorkletRaw], { 
+        // Create Blob URLs from base64 encoded worklets
+        const recordingWorkletCode = atob(AUDIO_PROCESSING_WORKLET_BASE64);
+        const vuWorkletCode = atob(VOL_METER_WORKLET_BASE64);
+        
+        const recordingWorkletBlob = new Blob([recordingWorkletCode], { 
           type: 'application/javascript' 
         });
-        const vuWorkletBlob = new Blob([volMeterWorkletRaw], { 
+        const vuWorkletBlob = new Blob([vuWorkletCode], { 
           type: 'application/javascript' 
         });
         
@@ -84,9 +176,7 @@ export class AudioRecorder extends EventEmitter<AudioRecorderEvents> {
         );
 
         this.recordingWorklet.port.onmessage = async (ev: MessageEvent) => {
-          // Worklet processes recording floats and messages converted buffer
           const arrayBuffer = ev.data.data.int16arrayBuffer;
-
           if (arrayBuffer) {
             const arrayBufferString = arrayBufferToBase64(arrayBuffer);
             this.emit('data', arrayBufferString);
@@ -107,10 +197,11 @@ export class AudioRecorder extends EventEmitter<AudioRecorderEvents> {
         URL.revokeObjectURL(vuWorkletUrl);
 
         this.recording = true;
+        console.log('Base64 worklets loaded successfully');
         resolve();
         this.starting = null;
       } catch (error) {
-        console.error('Error starting audio recorder:', error);
+        console.error('Error starting base64 audio recorder:', error);
         reject(error);
         this.starting = null;
       }
@@ -118,8 +209,6 @@ export class AudioRecorder extends EventEmitter<AudioRecorderEvents> {
   }
 
   stop() {
-    // It is plausible that stop would be called before start completes,
-    // such as if the Websocket immediately hangs up
     const handleStop = () => {
       this.source?.disconnect();
       this.stream?.getTracks().forEach(track => track.stop());

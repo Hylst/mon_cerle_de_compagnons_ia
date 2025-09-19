@@ -148,13 +148,37 @@ Pour contribuer au projet, consultez le fichier `README.md` et `todo.md` pour le
 
 ## [Unreleased]
 
+### Added
+- Initial project setup
+- Basic AI companion functionality
+- Multiple audio worklet loading strategies for production environments
+
+### Changed
+- Updated project structure
+- Fixed TypeScript syntax errors in audio worklets
+- Improved audio recorder implementation with better error handling
+
 ### Fixed
+- Minor bug fixes
+- **CRITICAL**: Fixed "AbortError: Unable to load a worklet's module" on Vercel production
+- **CRITICAL**: Fixed "SyntaxError: Unexpected identifier 'hasAudio'" in worklet code
+- Implemented 4 different solutions for worklet loading:
+  1. **Solution 1**: Fixed syntax and improved ?raw imports with proper MIME types
+  2. **Solution 2**: Base64 embedded worklets to avoid file loading issues
+  3. **Solution 3**: Dynamic imports with comprehensive fallback mechanisms
+  4. **Solution 4**: ScriptProcessorNode fallback for environments without worklet support
 - **Audio Worklet Loading on Vercel**:
   - Refactored `audio-processing.ts` and `vol-meter.ts` to be self-registering `AudioWorkletProcessor`s, removing the need for Blob URLs.
   - Updated `vite.config.ts` to treat worklet files as assets with stable URLs using the `?url` import suffix.
   - This resolves the issue where audio worklets failed to load in the Vercel production environment due to restrictive Content Security Policies.
   - Removed the now-redundant `audioworklet-registry.ts` and `createWorketFromSrc` function.
   - Updated `audio-streamer.ts`, `audio-recorder.ts`, and `use-live-api.ts` to use the new URL-based worklet loading mechanism.
+
+### Technical Details
+- Removed TypeScript type annotations from worklet files that caused parsing errors
+- Updated audio-recorder.ts to use proper Blob creation with 'application/javascript' MIME type
+- Created alternative implementations for different deployment scenarios
+- Simplified Vite configuration to avoid complex Rollup bundling issues
 
 ### Terminé
 - Correction du pattern regex dans vercel.json pour le déploiement Vercel

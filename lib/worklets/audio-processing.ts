@@ -12,11 +12,10 @@ class AudioProcessingWorklet extends AudioWorkletProcessor {
 
   // current write index
   bufferWriteIndex = 0;
-  hasAudio: boolean;
+  hasAudio = false;
 
   constructor() {
     super();
-    this.hasAudio = false;
   }
 
   /**
