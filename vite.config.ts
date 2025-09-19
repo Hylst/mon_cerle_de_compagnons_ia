@@ -14,24 +14,7 @@ export default defineConfig(({ mode }) => {
         }
       },
       build: {
-        rollupOptions: {
-          input: {
-            main: path.resolve(__dirname, 'index.html'),
-            'audio-processing': path.resolve(__dirname, 'lib/worklets/audio-processing.ts'),
-            'vol-meter': path.resolve(__dirname, 'lib/worklets/vol-meter.ts')
-          },
-          output: {
-            entryFileNames: (chunkInfo) => {
-              const worklets = ['audio-processing', 'vol-meter'];
-              if (worklets.includes(chunkInfo.name)) {
-                return 'assets/[name].js';
-              }
-              return 'assets/[name]-[hash].js';
-            },
-            chunkFileNames: 'assets/[name]-[hash].js',
-            assetFileNames: 'assets/[name]-[hash].[ext]',
-          }
-        }
+        // Keep the build configuration simple
       }
     };
 });
