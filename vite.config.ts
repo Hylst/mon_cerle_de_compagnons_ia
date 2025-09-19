@@ -16,19 +16,19 @@ export default defineConfig(({ mode }) => {
       build: {
         rollupOptions: {
           output: {
-            manualChunks: (id) => {
-              if (id.includes('node_modules')) {
-                return 'vendor';
-              }
-            },
-            assetFileNames: (assetInfo) => {
-              if (assetInfo.name && assetInfo.name.endsWith('.ts') && assetInfo.name.includes('lib/worklets')) {
-                return `assets/worklets/[name].[ext]`;
-              }
-              return `assets/[name].[hash].[ext]`;
-            },
+            entryFileNames: `assets/[name].[hash].js`,
+            chunkFileNames: `assets/[name].[hash].js`,
+            assetFileNames: `assets/[name].[hash].[ext]`
           }
         }
-      }
+      },
+      worker: {
+        format: 'es',
+        rollupOptions: {
+            output: {
+                entryFileNames: 'assets/worklets/[name].js',
+            },
+        },
+      },
     };
 });
