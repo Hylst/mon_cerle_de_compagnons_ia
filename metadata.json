@@ -1,0 +1,7 @@
+{
+  "name": "Mon cercle de compagnons IA",
+  "description": "Un outil interactif qui vous permet de concevoir, tester et discuter avec des personnages IA personnalisés à la volée.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
