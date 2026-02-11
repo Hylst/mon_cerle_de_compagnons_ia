@@ -10,7 +10,7 @@
 
 **Une application révolutionnaire d'IA conversationnelle avec 12 compagnons uniques**
 
-*Créé par Geoffroy Streit*
+*Créé avec IA par Geoffroy Streit*
 
 </div>
 
